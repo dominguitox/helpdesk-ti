@@ -35,7 +35,13 @@
     </style>
 
     <h2>Tickets</h2>
-    
+           <!-- Mas adelante seria importante que si el ticket fue resuelto, el puntito de color sea gris o algo asi
+           también me gustaria que en vez de puntitos de colores sea como 4 barras que sean como: 
+           bajo:    ■□□□ 
+           medio:   ■■□□
+           alto:    ■■■□
+           critico: ■■■■
+           -->
     <asp:GridView ID="gvTickets" runat="server"
         AutoGenerateColumns="false"
         DataKeyNames="IdTicket"
@@ -43,13 +49,7 @@
         GridLines="Horizontal"
         CssClass="table table-hover">
         <Columns>
-            <!-- Mas adelante seria importante que si el ticket fue resuelto, el puntito de color sea gris o algo asi
-                también me gustaria que en vez de puntitos de colores sea como 4 barras que sean como: 
-                bajo:    ■□□□ 
-                medio:   ■■□□
-                alto:    ■■■□
-                critico: ■■■■
-                -->
+     
             <asp:CommandField ShowSelectButton="true" />
             <asp:TemplateField HeaderText="Prioridad">
                 <ItemTemplate>
