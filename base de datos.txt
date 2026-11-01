@@ -1,0 +1,600 @@
+
+/* =========================================================
+   PROYECTO ABPRO - SISTEMA DE GESTION DE TICKETS TI
+   Base de datos: HelpDeskTI
+   SQL Server Express
+   ========================================================= */
+
+-- 1. CREAR LA BASE DE DATOS SI NO EXISTE
+
+IF DB_ID(N'HelpDeskTI') IS NULL
+BEGIN
+    EXEC(N'CREATE DATABASE [HelpDeskTI]');
+END;
+GO
+
+USE [HelpDeskTI];
+GO
+
+SET NOCOUNT ON;
+GO
+
+/* =========================================================
+   2. TABLA USUARIOS
+   Almacena las cuentas de acceso al sistema.
+   ========================================================= */
+
+IF OBJECT_ID(N'dbo.Usuarios', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Usuarios
+    (
+        IdUsuario INT IDENTITY(1,1) NOT NULL,
+        Nombre NVARCHAR(100) NOT NULL,
+        Correo NVARCHAR(150) NOT NULL,
+        ContrasenaHash CHAR(64) NOT NULL,
+        Rol NVARCHAR(20) NOT NULL,
+        Activo BIT NOT NULL
+            CONSTRAINT DF_Usuarios_Activo DEFAULT (1),
+        FechaCreacion DATETIME2(0) NOT NULL
+            CONSTRAINT DF_Usuarios_FechaCreacion
+            DEFAULT (SYSDATETIME()),
+
+        CONSTRAINT PK_Usuarios
+            PRIMARY KEY (IdUsuario),
+
+        CONSTRAINT UQ_Usuarios_Correo
+            UNIQUE (Correo),
+
+        CONSTRAINT CK_Usuarios_Rol
+            CHECK (Rol IN
+                (N'Administrador', N'Usuario', N'Tecnico'))
+    );
+END;
+GO
+
+/* =========================================================
+   3. TABLA ESTADOS
+   Define los estados posibles de un ticket.
+   ========================================================= */
+
+IF OBJECT_ID(N'dbo.Estados', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Estados
+    (
+        IdEstado INT IDENTITY(1,1) NOT NULL,
+        Nombre NVARCHAR(40) NOT NULL,
+        Descripcion NVARCHAR(250) NULL,
+        Orden TINYINT NOT NULL,
+
+        CONSTRAINT PK_Estados
+            PRIMARY KEY (IdEstado),
+
+        CONSTRAINT UQ_Estados_Nombre
+            UNIQUE (Nombre),
+
+        CONSTRAINT UQ_Estados_Orden
+            UNIQUE (Orden)
+    );
+END;
+GO
+
+/* =========================================================
+   4. TABLA PRIORIDADES
+   Define el nivel de urgencia de los tickets.
+   ========================================================= */
+
+IF OBJECT_ID(N'dbo.Prioridades', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Prioridades
+    (
+        IdPrioridad INT IDENTITY(1,1) NOT NULL,
+        Nombre NVARCHAR(30) NOT NULL,
+        Nivel TINYINT NOT NULL,
+        Descripcion NVARCHAR(250) NULL,
+
+        CONSTRAINT PK_Prioridades
+            PRIMARY KEY (IdPrioridad),
+
+        CONSTRAINT UQ_Prioridades_Nombre
+            UNIQUE (Nombre),
+
+        CONSTRAINT UQ_Prioridades_Nivel
+            UNIQUE (Nivel)
+    );
+END;
+GO
+
+/* =========================================================
+   5. TABLA TECNICOS
+   Cada tecnico esta vinculado a un usuario del sistema.
+   ========================================================= */
+
+IF OBJECT_ID(N'dbo.Tecnicos', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Tecnicos
+    (
+        IdTecnico INT IDENTITY(1,1) NOT NULL,
+        IdUsuario INT NOT NULL,
+        Especialidad NVARCHAR(100) NOT NULL,
+        Activo BIT NOT NULL
+            CONSTRAINT DF_Tecnicos_Activo DEFAULT (1),
+        FechaIngreso DATETIME2(0) NOT NULL
+            CONSTRAINT DF_Tecnicos_FechaIngreso
+            DEFAULT (SYSDATETIME()),
+
+        CONSTRAINT PK_Tecnicos
+            PRIMARY KEY (IdTecnico),
+
+        CONSTRAINT UQ_Tecnicos_IdUsuario
+            UNIQUE (IdUsuario),
+
+        CONSTRAINT FK_Tecnicos_Usuarios
+            FOREIGN KEY (IdUsuario)
+            REFERENCES dbo.Usuarios (IdUsuario)
+    );
+END;
+GO
+
+/* =========================================================
+   6. TABLA TICKETS
+   Registra solicitudes, responsables, estados y prioridades.
+   ========================================================= */
+
+IF OBJECT_ID(N'dbo.Tickets', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Tickets
+    (
+        IdTicket INT IDENTITY(1,1) NOT NULL,
+        Titulo NVARCHAR(150) NOT NULL,
+        Descripcion NVARCHAR(MAX) NOT NULL,
+        IdUsuario INT NOT NULL,
+        IdTecnico INT NULL,
+        IdEstado INT NOT NULL,
+        IdPrioridad INT NOT NULL,
+        FechaCreacion DATETIME2(0) NOT NULL
+            CONSTRAINT DF_Tickets_FechaCreacion
+            DEFAULT (SYSDATETIME()),
+        FechaActualizacion DATETIME2(0) NULL,
+        FechaCierre DATETIME2(0) NULL,
+        Solucion NVARCHAR(MAX) NULL,
+
+        CONSTRAINT PK_Tickets
+            PRIMARY KEY (IdTicket),
+
+        CONSTRAINT FK_Tickets_Usuarios
+            FOREIGN KEY (IdUsuario)
+            REFERENCES dbo.Usuarios (IdUsuario),
+
+        CONSTRAINT FK_Tickets_Tecnicos
+            FOREIGN KEY (IdTecnico)
+            REFERENCES dbo.Tecnicos (IdTecnico),
+
+        CONSTRAINT FK_Tickets_Estados
+            FOREIGN KEY (IdEstado)
+            REFERENCES dbo.Estados (IdEstado),
+
+        CONSTRAINT FK_Tickets_Prioridades
+            FOREIGN KEY (IdPrioridad)
+            REFERENCES dbo.Prioridades (IdPrioridad)
+    );
+END;
+GO
+
+/* =========================================================
+   7. INDICES PARA FACILITAR LAS CONSULTAS
+   ========================================================= */
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = N'IX_Tickets_IdUsuario'
+      AND object_id = OBJECT_ID(N'dbo.Tickets')
+)
+BEGIN
+    CREATE INDEX IX_Tickets_IdUsuario
+        ON dbo.Tickets (IdUsuario);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = N'IX_Tickets_IdTecnico'
+      AND object_id = OBJECT_ID(N'dbo.Tickets')
+)
+BEGIN
+    CREATE INDEX IX_Tickets_IdTecnico
+        ON dbo.Tickets (IdTecnico);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = N'IX_Tickets_IdEstado'
+      AND object_id = OBJECT_ID(N'dbo.Tickets')
+)
+BEGIN
+    CREATE INDEX IX_Tickets_IdEstado
+        ON dbo.Tickets (IdEstado);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = N'IX_Tickets_IdPrioridad'
+      AND object_id = OBJECT_ID(N'dbo.Tickets')
+)
+BEGIN
+    CREATE INDEX IX_Tickets_IdPrioridad
+        ON dbo.Tickets (IdPrioridad);
+END;
+GO
+
+/* =========================================================
+   8. USUARIOS INICIALES
+   Las contrasenas estan almacenadas como hashes SHA-256.
+   Las cuentas son exclusivamente para pruebas academicas.
+   ========================================================= */
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Usuarios
+    WHERE Correo = N'admin@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Usuarios
+        (Nombre, Correo, ContrasenaHash, Rol, Activo)
+    VALUES
+        (N'Administrador del sistema',
+         N'admin@helpdeskti.local',
+         '0A5BC3E342432F1BAD92FFD51B785343EC72906CDBA6A26131060B008E786656',
+         N'Administrador', 1);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Usuarios
+    WHERE Correo = N'ana.perez@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Usuarios
+        (Nombre, Correo, ContrasenaHash, Rol, Activo)
+    VALUES
+        (N'Ana Perez',
+         N'ana.perez@helpdeskti.local',
+         'BE664548AF0A001CC4CBCEFC78B1EF81898886FB3E501AEE76296EB0A15872BB',
+         N'Usuario', 1);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Usuarios
+    WHERE Correo = N'carlos.rojas@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Usuarios
+        (Nombre, Correo, ContrasenaHash, Rol, Activo)
+    VALUES
+        (N'Carlos Rojas',
+         N'carlos.rojas@helpdeskti.local',
+         'BE664548AF0A001CC4CBCEFC78B1EF81898886FB3E501AEE76296EB0A15872BB',
+         N'Usuario', 1);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Usuarios
+    WHERE Correo = N'martin.martinez@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Usuarios
+        (Nombre, Correo, ContrasenaHash, Rol, Activo)
+    VALUES
+        (N'Martin Martinez',
+         N'martin.martinez@helpdeskti.local',
+         '0B85882342206F72366D34A93E6A0E7DAB6EAEDD118CD974EA79E13AAB889343',
+         N'Tecnico', 1);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Usuarios
+    WHERE Correo = N'camila.gonzalez@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Usuarios
+        (Nombre, Correo, ContrasenaHash, Rol, Activo)
+    VALUES
+        (N'Camila Gonzalez',
+         N'camila.gonzalez@helpdeskti.local',
+         '0B85882342206F72366D34A93E6A0E7DAB6EAEDD118CD974EA79E13AAB889343',
+         N'Tecnico', 1);
+END;
+GO
+
+/* =========================================================
+   9. ESTADOS INICIALES
+   ========================================================= */
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Estados WHERE Nombre = N'Nuevo'
+)
+BEGIN
+    INSERT INTO dbo.Estados (Nombre, Descripcion, Orden)
+    VALUES (N'Nuevo', N'Ticket recien registrado.', 1);
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Estados WHERE Nombre = N'Asignado'
+)
+BEGIN
+    INSERT INTO dbo.Estados (Nombre, Descripcion, Orden)
+    VALUES (N'Asignado', N'Ticket asignado a un tecnico.', 2);
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Estados WHERE Nombre = N'En proceso'
+)
+BEGIN
+    INSERT INTO dbo.Estados (Nombre, Descripcion, Orden)
+    VALUES (N'En proceso', N'Ticket en proceso de atencion.', 3);
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Estados WHERE Nombre = N'En espera'
+)
+BEGIN
+    INSERT INTO dbo.Estados (Nombre, Descripcion, Orden)
+    VALUES (N'En espera', N'Ticket pendiente de informacion o recursos.', 4);
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Estados WHERE Nombre = N'Resuelto'
+)
+BEGIN
+    INSERT INTO dbo.Estados (Nombre, Descripcion, Orden)
+    VALUES (N'Resuelto', N'Problema solucionado.', 5);
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Estados WHERE Nombre = N'Cerrado'
+)
+BEGIN
+    INSERT INTO dbo.Estados (Nombre, Descripcion, Orden)
+    VALUES (N'Cerrado', N'Ticket finalizado.', 6);
+END;
+GO
+
+/* =========================================================
+   10. PRIORIDADES INICIALES
+   Nivel 1 = menor urgencia; nivel 4 = mayor urgencia.
+   ========================================================= */
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Prioridades WHERE Nombre = N'Baja'
+)
+BEGIN
+    INSERT INTO dbo.Prioridades (Nombre, Nivel, Descripcion)
+    VALUES (N'Baja', 1, N'Solicitud de baja urgencia.');
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Prioridades WHERE Nombre = N'Media'
+)
+BEGIN
+    INSERT INTO dbo.Prioridades (Nombre, Nivel, Descripcion)
+    VALUES (N'Media', 2, N'Solicitud de urgencia normal.');
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Prioridades WHERE Nombre = N'Alta'
+)
+BEGIN
+    INSERT INTO dbo.Prioridades (Nombre, Nivel, Descripcion)
+    VALUES (N'Alta', 3, N'Solicitud que requiere atencion prioritaria.');
+END;
+
+IF NOT EXISTS (
+    SELECT 1 FROM dbo.Prioridades WHERE Nombre = N'Critica'
+)
+BEGIN
+    INSERT INTO dbo.Prioridades (Nombre, Nivel, Descripcion)
+    VALUES (N'Critica', 4, N'Incidente urgente o de alto impacto.');
+END;
+GO
+
+/* =========================================================
+   11. TECNICOS INICIALES
+   ========================================================= */
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.Tecnicos t
+    INNER JOIN dbo.Usuarios u ON u.IdUsuario = t.IdUsuario
+    WHERE u.Correo = N'martin.martinez@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Tecnicos (IdUsuario, Especialidad, Activo)
+    SELECT IdUsuario, N'Hardware y equipos', 1
+    FROM dbo.Usuarios
+    WHERE Correo = N'martin.martinez@helpdeskti.local';
+END;
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.Tecnicos t
+    INNER JOIN dbo.Usuarios u ON u.IdUsuario = t.IdUsuario
+    WHERE u.Correo = N'camila.gonzalez@helpdeskti.local'
+)
+BEGIN
+    INSERT INTO dbo.Tecnicos (IdUsuario, Especialidad, Activo)
+    SELECT IdUsuario, N'Redes y aplicaciones', 1
+    FROM dbo.Usuarios
+    WHERE Correo = N'camila.gonzalez@helpdeskti.local';
+END;
+GO
+
+/* =========================================================
+   12. TICKETS DE PRUEBA
+   Se relacionan usuarios, tecnicos, estados y prioridades.
+   ========================================================= */
+
+INSERT INTO dbo.Tickets
+    (Titulo, Descripcion, IdUsuario, IdTecnico,
+     IdEstado, IdPrioridad)
+
+SELECT
+    v.Titulo,
+    v.Descripcion,
+    u.IdUsuario,
+    te.IdTecnico,
+    e.IdEstado,
+    p.IdPrioridad
+FROM
+(
+    VALUES
+    (
+        N'No puedo conectarme al Wi-Fi',
+        N'El equipo no logra conectarse a la red de la oficina.',
+        N'ana.perez@helpdeskti.local',
+        N'martin.martinez@helpdeskti.local',
+        N'En proceso',
+        N'Alta'
+    ),
+    (
+        N'Solicitud de instalacion de Office',
+        N'Se requiere instalar el paquete de ofimatica.',
+        N'carlos.rojas@helpdeskti.local',
+        CAST(NULL AS NVARCHAR(150)),
+        N'Nuevo',
+        N'Media'
+    ),
+    (
+        N'Equipo no enciende',
+        N'El computador no inicia al presionar el boton de encendido.',
+        N'ana.perez@helpdeskti.local',
+        N'martin.martinez@helpdeskti.local',
+        N'Asignado',
+        N'Critica'
+    ),
+    (
+        N'Problema de acceso al correo',
+        N'El usuario no podia acceder a su correo corporativo.',
+        N'carlos.rojas@helpdeskti.local',
+        N'camila.gonzalez@helpdeskti.local',
+        N'Resuelto',
+        N'Alta'
+    ),
+    (
+        N'Impresora no responde',
+        N'La impresora no responde a los trabajos enviados.',
+        N'ana.perez@helpdeskti.local',
+        N'camila.gonzalez@helpdeskti.local',
+        N'En espera',
+        N'Baja'
+    )
+) AS v
+(
+    Titulo, Descripcion, CorreoUsuario, CorreoTecnico,
+    Estado, Prioridad
+)
+INNER JOIN dbo.Usuarios u
+    ON u.Correo = v.CorreoUsuario
+INNER JOIN dbo.Estados e
+    ON e.Nombre = v.Estado
+INNER JOIN dbo.Prioridades p
+    ON p.Nombre = v.Prioridad
+LEFT JOIN dbo.Usuarios ut
+    ON ut.Correo = v.CorreoTecnico
+LEFT JOIN dbo.Tecnicos te
+    ON te.IdUsuario = ut.IdUsuario
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.Tickets existente
+    WHERE existente.Titulo = v.Titulo
+      AND existente.IdUsuario = u.IdUsuario
+);
+GO
+
+/* Completar los datos del ticket de prueba resuelto. */
+
+UPDATE t
+SET
+    FechaActualizacion = COALESCE(
+        t.FechaActualizacion, SYSDATETIME()
+    ),
+    FechaCierre = COALESCE(
+        t.FechaCierre, SYSDATETIME()
+    ),
+    Solucion = COALESCE(
+        t.Solucion,
+        N'Se restablecio el acceso al correo corporativo.'
+    )
+FROM dbo.Tickets t
+INNER JOIN dbo.Usuarios u
+    ON u.IdUsuario = t.IdUsuario
+INNER JOIN dbo.Estados e
+    ON e.IdEstado = t.IdEstado
+WHERE t.Titulo = N'Problema de acceso al correo'
+  AND u.Correo = N'carlos.rojas@helpdeskti.local'
+  AND e.Nombre = N'Resuelto';
+GO
+
+/* =========================================================
+   13. COMPROBACION FINAL
+   ========================================================= */
+
+-- Usuarios: no mostrar los hashes de las contrasenas.
+SELECT
+    IdUsuario,
+    Nombre,
+    Correo,
+    Rol,
+    Activo,
+    FechaCreacion
+FROM dbo.Usuarios
+ORDER BY IdUsuario;
+
+-- Tecnicos y su usuario asociado.
+SELECT
+    t.IdTecnico,
+    u.Nombre,
+    u.Correo,
+    t.Especialidad,
+    t.Activo
+FROM dbo.Tecnicos t
+INNER JOIN dbo.Usuarios u
+    ON u.IdUsuario = t.IdUsuario
+ORDER BY t.IdTecnico;
+
+-- Estados.
+SELECT *
+FROM dbo.Estados
+ORDER BY Orden;
+
+-- Prioridades.
+SELECT *
+FROM dbo.Prioridades
+ORDER BY Nivel;
+
+-- Tickets con sus relaciones.
+SELECT
+    t.IdTicket,
+    t.Titulo,
+    u.Nombre AS UsuarioSolicitante,
+    ut.Nombre AS TecnicoResponsable,
+    e.Nombre AS Estado,
+    p.Nombre AS Prioridad,
+    t.FechaCreacion,
+    t.FechaCierre
+FROM dbo.Tickets t
+INNER JOIN dbo.Usuarios u
+    ON u.IdUsuario = t.IdUsuario
+LEFT JOIN dbo.Tecnicos te
+    ON te.IdTecnico = t.IdTecnico
+LEFT JOIN dbo.Usuarios ut
+    ON ut.IdUsuario = te.IdUsuario
+INNER JOIN dbo.Estados e
+    ON e.IdEstado = t.IdEstado
+INNER JOIN dbo.Prioridades p
+    ON p.IdPrioridad = t.IdPrioridad
+ORDER BY t.IdTicket;
+GO
