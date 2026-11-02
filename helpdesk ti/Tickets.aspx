@@ -35,7 +35,7 @@
     </style>
 
     <h2>Tickets</h2>
-           <!-- Mas adelante seria importante que si el ticket fue resuelto, el puntito de color sea gris o algo asi
+    <!-- Mas adelante seria importante que si el ticket fue resuelto, el puntito de color sea gris o algo asi
            también me gustaria que en vez de puntitos de colores sea como 4 barras que sean como: 
            bajo:    ■□□□ 
            medio:   ■■□□
@@ -49,7 +49,7 @@
         GridLines="Horizontal"
         CssClass="table table-hover">
         <Columns>
-     
+
             <asp:CommandField ShowSelectButton="true" />
             <asp:TemplateField HeaderText="Prioridad">
                 <ItemTemplate>
@@ -75,45 +75,86 @@
                 <asp:Label ID="lblPrioridadDescripcion" runat="server" />
             </div>
         </asp:Panel>
+        <div class="row">
+            <div class=" col-md-6">
+                <h3 class="mt-3">Ticket Nº
+            <asp:Label ID="lblNumero" runat="server" />
+                    <span><strong>
+                        <asp:Label ID="lblTitulo" runat="server" /></strong></span>
+                </h3>
+                <p>
+                    <strong>Solicitante:</strong>
+                    <asp:Label ID="lblSolicitante" runat="server" />
+                </p>
+                <p>
+                    <strong>Técnico:</strong>
+                    <asp:Label ID="lblTecnico" runat="server" />
+                </p>
+                <p>
+                    <strong>Estado:</strong>
+                    <asp:Label ID="lblEstado" runat="server" />
+                </p>
+                <p>
+                    <strong>Creado:</strong>
+                    <asp:Label ID="lblFechaCreacion" runat="server" />
+                </p>
+                <p>
+                    <strong>Actualizado:</strong>
+                    <asp:Label ID="lblFechaActualizacion" runat="server" />
+                </p>
+                <p>
+                    <strong>Cerrado:</strong>
+                    <asp:Label ID="lblFechaCierre" runat="server" />
+                </p>
 
-        <h3 class="mt-3">Ticket Nº
-            <asp:Label ID="lblNumero" runat="server" /></h3>
-        <h4>
-            <asp:Label ID="lblTitulo" runat="server" /></h4>
+                <h5>Descripción</h5>
+                <p>
+                    <asp:Label ID="lblDescripcion" runat="server" />
+                </p>
 
-        <p>
-            <strong>Solicitante:</strong>
-            <asp:Label ID="lblSolicitante" runat="server" />
-        </p>
-        <p>
-            <strong>Técnico:</strong>
-            <asp:Label ID="lblTecnico" runat="server" />
-        </p>
-        <p>
-            <strong>Estado:</strong>
-            <asp:Label ID="lblEstado" runat="server" />
-        </p>
-        <p>
-            <strong>Creado:</strong>
-            <asp:Label ID="lblFechaCreacion" runat="server" />
-        </p>
-        <p>
-            <strong>Actualizado:</strong>
-            <asp:Label ID="lblFechaActualizacion" runat="server" />
-        </p>
-        <p>
-            <strong>Cerrado:</strong>
-            <asp:Label ID="lblFechaCierre" runat="server" />
-        </p>
+                <h5>Solución</h5>
+                <p>
+                    <asp:Label ID="lblSolucion" runat="server" />
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h3 class="mt-3">Gestionar ticket</h3>
 
-        <h5>Descripción</h5>
-        <p>
-            <asp:Label ID="lblDescripcion" runat="server" />
-        </p>
+                <asp:Label ID="lblMensaje" runat="server" CssClass="d-block mb-3" Visible="false" />
 
-        <h5>Solución</h5>
-        <p>
-            <asp:Label ID="lblSolucion" runat="server" />
-        </p>
+                <div class="mb-3">
+                    <label class="form-label" for="ddlEstado">Estado</label>
+                    <asp:DropDownList ID="ddlEstado" runat="server" CssClass="form-select" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ddlPrioridad">Prioridad</label>
+                    <asp:DropDownList ID="ddlPrioridad" runat="server" CssClass="form-select" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ddlTecnico">Asignar a técnico</label>
+                    <asp:DropDownList ID="ddlTecnico" runat="server" CssClass="form-select" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="txtRespuesta">Responder al solicitante</label>
+                    <asp:TextBox ID="txtRespuesta" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" />
+                    <asp:Button ID="btnResponder" runat="server" Text="Enviar respuesta" CssClass="btn btn-outline-primary btn-sm mt-2" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="txtSolucion">Solución</label>
+                    <asp:TextBox ID="txtSolucion" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" />
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <asp:Button ID="btnGuardar" runat="server" Text="Guardar cambios" CssClass="btn btn-primary" />
+                    <asp:Button ID="btnSolucionar" runat="server" Text="Marcar como solucionado" CssClass="btn btn-success" />
+                    <asp:Button ID="btnCerrar" runat="server" Text="Cerrar ticket" CssClass="btn btn-secondary" />
+                </div>
+            </div>
+        </div>
+
     </asp:Panel>
 </asp:Content>

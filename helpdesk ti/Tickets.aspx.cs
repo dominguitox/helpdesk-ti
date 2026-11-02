@@ -113,6 +113,7 @@ namespace helpdesk_ti
         {
             return fecha.HasValue ? fecha.Value.ToString("dd-MM-yyyy HH:mm") : "—";
         }
+        // NIGGER!  
 
     }
 }
