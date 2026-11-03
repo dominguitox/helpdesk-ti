@@ -186,24 +186,6 @@ namespace helpdesk_ti
         protected global::System.Web.UI.WebControls.DropDownList ddlTecnico;
 
         /// <summary>
-        /// txtRespuesta control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtRespuesta;
-
-        /// <summary>
-        /// btnResponder control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnResponder;
-
-        /// <summary>
         /// txtSolucion control.
         /// </summary>
         /// <remarks>

@@ -2,12 +2,37 @@
 
 <asp:Content ID="ContentTickets" ContentPlaceHolderID="MainContent" runat="server">
     <style>
-        .circulo-prioridad {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
+        .barras {
+            display: inline-flex;
+            gap: 3px;
             vertical-align: middle;
+        }
+
+        .barra {
+            width: 8px;
+            height: 14px;
+            border-radius: 2px;
+            background-color: #dee2e6;
+        }
+
+        .color-baja .barra.activa {
+            background-color: #28a745;
+        }
+
+        .color-media .barra.activa {
+            background-color: #ffc107;
+        }
+
+        .color-alta .barra.activa {
+            background-color: #fd7e14;
+        }
+
+        .color-critica .barra.activa {
+            background-color: #dc3545;
+        }
+
+        .barras.resuelto .barra.activa {
+            background-color: #adb5bd;
         }
 
         .prioridad-banner {
@@ -35,13 +60,6 @@
     </style>
 
     <h2>Tickets</h2>
-    <!-- Mas adelante seria importante que si el ticket fue resuelto, el puntito de color sea gris o algo asi
-           también me gustaria que en vez de puntitos de colores sea como 4 barras que sean como: 
-           bajo:    ■□□□ 
-           medio:   ■■□□
-           alto:    ■■■□
-           critico: ■■■■
-           -->
     <asp:GridView ID="gvTickets" runat="server"
         AutoGenerateColumns="false"
         DataKeyNames="IdTicket"
@@ -53,8 +71,8 @@
             <asp:CommandField ShowSelectButton="true" />
             <asp:TemplateField HeaderText="Prioridad">
                 <ItemTemplate>
-                    <span class='circulo-prioridad <%# ClaseCirculo(Eval("PrioridadNivel")) %>'
-                        title='<%# Eval("Prioridad") %>'></span>
+                    <span class='barras <%# ClaseBarras(Eval("PrioridadNivel"), Eval("Resuelto")) %>'
+                        title='<%# Eval("Prioridad") %>'><%# BarrasHtml(Eval("PrioridadNivel")) %></span>
                 </ItemTemplate>
             </asp:TemplateField>
             <asp:BoundField DataField="IdTicket" HeaderText="Nº" />
@@ -120,38 +138,35 @@
             <div class="col-md-6">
                 <h3 class="mt-3">Gestionar ticket</h3>
 
-                <asp:Label ID="lblMensaje" runat="server" CssClass="d-block mb-3" Visible="false" />
+                <asp:Label ID="lblMensaje" runat="server" Visible="false" CssClass="d-block mb-3" />
 
                 <div class="mb-3">
-                    <label class="form-label" for="ddlEstado">Estado</label>
+                    <label class="form-label" for="<%= ddlEstado.ClientID %>">Estado</label>
                     <asp:DropDownList ID="ddlEstado" runat="server" CssClass="form-select" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="ddlPrioridad">Prioridad</label>
+                    <label class="form-label" for="<%= ddlPrioridad.ClientID %>">Prioridad</label>
                     <asp:DropDownList ID="ddlPrioridad" runat="server" CssClass="form-select" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="ddlTecnico">Asignar a técnico</label>
+                    <label class="form-label" for="<%= ddlTecnico.ClientID %>">Asignar a técnico</label>
                     <asp:DropDownList ID="ddlTecnico" runat="server" CssClass="form-select" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="txtRespuesta">Responder al solicitante</label>
-                    <asp:TextBox ID="txtRespuesta" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" />
-                    <asp:Button ID="btnResponder" runat="server" Text="Enviar respuesta" CssClass="btn btn-outline-primary btn-sm mt-2" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" for="txtSolucion">Solución</label>
+                    <label class="form-label" for="<%= txtSolucion.ClientID %>">Solución</label>
                     <asp:TextBox ID="txtSolucion" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" />
                 </div>
 
                 <div class="d-flex flex-wrap gap-2">
-                    <asp:Button ID="btnGuardar" runat="server" Text="Guardar cambios" CssClass="btn btn-primary" />
-                    <asp:Button ID="btnSolucionar" runat="server" Text="Marcar como solucionado" CssClass="btn btn-success" />
-                    <asp:Button ID="btnCerrar" runat="server" Text="Cerrar ticket" CssClass="btn btn-secondary" />
+                    <asp:Button ID="btnGuardar" runat="server" Text="Guardar cambios"
+                        CssClass="btn btn-primary" OnClick="btnGuardar_Click" />
+                    <asp:Button ID="btnSolucionar" runat="server" Text="Marcar como solucionado"
+                        CssClass="btn btn-success" OnClick="btnSolucionar_Click" />
+                    <asp:Button ID="btnCerrar" runat="server" Text="Cerrar ticket"
+                        CssClass="btn btn-secondary" OnClick="btnCerrar_Click" />
                 </div>
             </div>
         </div>
