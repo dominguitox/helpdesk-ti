@@ -2,11 +2,11 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="es">
 <head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - My ASP.NET Application</title>
+    <title><%: Page.Title %> - HelpDesk TI</title>
 
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/bundles/modernizr") %>
@@ -37,18 +37,53 @@
             </Scripts>
         </asp:ScriptManager>
 
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" runat="server" href="~/">Application name</a>
-                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+                <asp:HyperLink ID="lnkBrand" runat="server"
+                    CssClass="navbar-brand fw-semibold">HelpDesk TI</asp:HyperLink>
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarMenu" title="Mostrar navegación" aria-controls="navbarMenu"
+                    aria-expanded="false" aria-label="Mostrar navegación">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/About">About</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Contact">Contact</a></li>
+                <div id="navbarMenu" class="collapse navbar-collapse">
+                    <ul class="navbar-nav me-auto">
+                        <asp:PlaceHolder ID="phClienteNav" runat="server">
+                            <li class="nav-item">
+                                <a class="nav-link" runat="server" href="~/NuevoTicket.aspx">Crear ticket</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" runat="server" href="~/MisTickets.aspx">Mis tickets</a>
+                            </li>
+                        </asp:PlaceHolder>
+                        <asp:PlaceHolder ID="phStaffNav" runat="server">
+                            <li class="nav-item">
+                                <a class="nav-link" runat="server" href="~/Tickets.aspx">Administrar tickets</a>
+                            </li>
+                        </asp:PlaceHolder>
+                        <asp:PlaceHolder ID="phAdminNav" runat="server">
+                            <li class="nav-item">
+                                <a class="nav-link" runat="server" href="~/Tecnicos.aspx">Técnicos</a>
+                            </li>
+                        </asp:PlaceHolder>
+                    </ul>
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <asp:PlaceHolder ID="phAnonymousNav" runat="server">
+                            <li class="nav-item">
+                                <a class="nav-link" runat="server" href="~/Login.aspx">Iniciar sesión</a>
+                            </li>
+                        </asp:PlaceHolder>
+                        <asp:PlaceHolder ID="phSignedInNav" runat="server">
+                            <li class="nav-item">
+                                <span class="navbar-text text-white me-lg-3">
+                                    <asp:Label ID="lblNombreUsuario" runat="server" />
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <asp:LinkButton ID="btnCerrarSesion" runat="server"
+                                    CssClass="nav-link" CausesValidation="false"
+                                    OnClick="btnCerrarSesion_Click">Cerrar sesión</asp:LinkButton>
+                            </li>
+                        </asp:PlaceHolder>
                     </ul>
                 </div>
             </div>
@@ -58,7 +93,7 @@
             </asp:ContentPlaceHolder>
             <hr />
             <footer>
-                <p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p>
+                <p>&copy; <%: DateTime.Now.Year %> HelpDesk TI</p>
             </footer>
         </div>
     </form>

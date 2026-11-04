@@ -1,0 +1,396 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="HelpDeskTIModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Estados">
+          <Key>
+            <PropertyRef Name="IdEstado" />
+          </Key>
+          <Property Name="IdEstado" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Nombre" Type="nvarchar" MaxLength="40" Nullable="false" />
+          <Property Name="Descripcion" Type="nvarchar" MaxLength="250" />
+          <Property Name="Orden" Type="tinyint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Prioridades">
+          <Key>
+            <PropertyRef Name="IdPrioridad" />
+          </Key>
+          <Property Name="IdPrioridad" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Nombre" Type="nvarchar" MaxLength="30" Nullable="false" />
+          <Property Name="Nivel" Type="tinyint" Nullable="false" />
+          <Property Name="Descripcion" Type="nvarchar" MaxLength="250" />
+        </EntityType>
+        <EntityType Name="Tecnicos">
+          <Key>
+            <PropertyRef Name="IdTecnico" />
+          </Key>
+          <Property Name="IdTecnico" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="IdUsuario" Type="int" Nullable="false" />
+          <Property Name="Activo" Type="bit" Nullable="false" />
+          <Property Name="FechaIngreso" Type="datetime2" Precision="0" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Tickets">
+          <Key>
+            <PropertyRef Name="IdTicket" />
+          </Key>
+          <Property Name="IdTicket" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Titulo" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="Descripcion" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="IdUsuario" Type="int" Nullable="false" />
+          <Property Name="IdTecnico" Type="int" />
+          <Property Name="IdEstado" Type="int" Nullable="false" />
+          <Property Name="IdPrioridad" Type="int" Nullable="false" />
+          <Property Name="FechaCreacion" Type="datetime2" Precision="0" Nullable="false" />
+          <Property Name="FechaActualizacion" Type="datetime2" Precision="0" />
+          <Property Name="FechaCierre" Type="datetime2" Precision="0" />
+          <Property Name="Solucion" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="Usuarios">
+          <Key>
+            <PropertyRef Name="IdUsuario" />
+          </Key>
+          <Property Name="IdUsuario" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Nombre" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="Correo" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="ContrasenaHash" Type="char" MaxLength="64" Nullable="false" />
+          <Property Name="Rol" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="Activo" Type="bit" Nullable="false" />
+          <Property Name="FechaCreacion" Type="datetime2" Precision="0" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Tecnicos_Usuarios">
+          <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
+          <End Role="Tecnicos" Type="Self.Tecnicos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuarios">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Tecnicos">
+              <PropertyRef Name="IdUsuario" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Estados">
+          <End Role="Estados" Type="Self.Estados" Multiplicity="1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Estados">
+              <PropertyRef Name="IdEstado" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdEstado" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Prioridades">
+          <End Role="Prioridades" Type="Self.Prioridades" Multiplicity="1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Prioridades">
+              <PropertyRef Name="IdPrioridad" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdPrioridad" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Tecnicos">
+          <End Role="Tecnicos" Type="Self.Tecnicos" Multiplicity="0..1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Tecnicos">
+              <PropertyRef Name="IdTecnico" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdTecnico" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Usuarios">
+          <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuarios">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdUsuario" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="HelpDeskTIModelStoreContainer">
+          <EntitySet Name="Estados" EntityType="Self.Estados" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Prioridades" EntityType="Self.Prioridades" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Tecnicos" EntityType="Self.Tecnicos" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Tickets" EntityType="Self.Tickets" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Usuarios" EntityType="Self.Usuarios" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Tecnicos_Usuarios" Association="Self.FK_Tecnicos_Usuarios">
+            <End Role="Usuarios" EntitySet="Usuarios" />
+            <End Role="Tecnicos" EntitySet="Tecnicos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Estados" Association="Self.FK_Tickets_Estados">
+            <End Role="Estados" EntitySet="Estados" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Prioridades" Association="Self.FK_Tickets_Prioridades">
+            <End Role="Prioridades" EntitySet="Prioridades" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Tecnicos" Association="Self.FK_Tickets_Tecnicos">
+            <End Role="Tecnicos" EntitySet="Tecnicos" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Usuarios" Association="Self.FK_Tickets_Usuarios">
+            <End Role="Usuarios" EntitySet="Usuarios" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="HelpDeskTIModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Estados">
+          <Key>
+            <PropertyRef Name="IdEstado" />
+          </Key>
+          <Property Name="IdEstado" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Nombre" Type="String" MaxLength="40" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Descripcion" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Orden" Type="Byte" Nullable="false" />
+          <NavigationProperty Name="Tickets" Relationship="Self.FK_Tickets_Estados" FromRole="Estados" ToRole="Tickets" />
+        </EntityType>
+        <EntityType Name="Prioridades">
+          <Key>
+            <PropertyRef Name="IdPrioridad" />
+          </Key>
+          <Property Name="IdPrioridad" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Nombre" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Nivel" Type="Byte" Nullable="false" />
+          <Property Name="Descripcion" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Tickets" Relationship="Self.FK_Tickets_Prioridades" FromRole="Prioridades" ToRole="Tickets" />
+        </EntityType>
+        <EntityType Name="Tecnicos">
+          <Key>
+            <PropertyRef Name="IdTecnico" />
+          </Key>
+          <Property Name="IdTecnico" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="IdUsuario" Type="Int32" Nullable="false" />
+          <Property Name="Activo" Type="Boolean" Nullable="false" />
+          <Property Name="FechaIngreso" Type="DateTime" Nullable="false" Precision="0" />
+          <NavigationProperty Name="Usuarios" Relationship="Self.FK_Tecnicos_Usuarios" FromRole="Tecnicos" ToRole="Usuarios" />
+          <NavigationProperty Name="Tickets" Relationship="Self.FK_Tickets_Tecnicos" FromRole="Tecnicos" ToRole="Tickets" />
+        </EntityType>
+        <EntityType Name="Tickets">
+          <Key>
+            <PropertyRef Name="IdTicket" />
+          </Key>
+          <Property Name="IdTicket" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Titulo" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Descripcion" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="IdUsuario" Type="Int32" Nullable="false" />
+          <Property Name="IdTecnico" Type="Int32" />
+          <Property Name="IdEstado" Type="Int32" Nullable="false" />
+          <Property Name="IdPrioridad" Type="Int32" Nullable="false" />
+          <Property Name="FechaCreacion" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="FechaActualizacion" Type="DateTime" Precision="0" />
+          <Property Name="FechaCierre" Type="DateTime" Precision="0" />
+          <Property Name="Solucion" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Estados" Relationship="Self.FK_Tickets_Estados" FromRole="Tickets" ToRole="Estados" />
+          <NavigationProperty Name="Prioridades" Relationship="Self.FK_Tickets_Prioridades" FromRole="Tickets" ToRole="Prioridades" />
+          <NavigationProperty Name="Tecnicos" Relationship="Self.FK_Tickets_Tecnicos" FromRole="Tickets" ToRole="Tecnicos" />
+          <NavigationProperty Name="Usuarios" Relationship="Self.FK_Tickets_Usuarios" FromRole="Tickets" ToRole="Usuarios" />
+        </EntityType>
+        <EntityType Name="Usuarios">
+          <Key>
+            <PropertyRef Name="IdUsuario" />
+          </Key>
+          <Property Name="IdUsuario" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Nombre" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Correo" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="ContrasenaHash" Type="String" MaxLength="64" FixedLength="true" Unicode="false" Nullable="false" />
+          <Property Name="Rol" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Activo" Type="Boolean" Nullable="false" />
+          <Property Name="FechaCreacion" Type="DateTime" Nullable="false" Precision="0" />
+          <NavigationProperty Name="Tecnicos" Relationship="Self.FK_Tecnicos_Usuarios" FromRole="Usuarios" ToRole="Tecnicos" />
+          <NavigationProperty Name="Tickets" Relationship="Self.FK_Tickets_Usuarios" FromRole="Usuarios" ToRole="Tickets" />
+        </EntityType>
+        <Association Name="FK_Tickets_Estados">
+          <End Role="Estados" Type="Self.Estados" Multiplicity="1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Estados">
+              <PropertyRef Name="IdEstado" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdEstado" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Prioridades">
+          <End Role="Prioridades" Type="Self.Prioridades" Multiplicity="1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Prioridades">
+              <PropertyRef Name="IdPrioridad" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdPrioridad" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tecnicos_Usuarios">
+          <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
+          <End Role="Tecnicos" Type="Self.Tecnicos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuarios">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Tecnicos">
+              <PropertyRef Name="IdUsuario" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Tecnicos">
+          <End Role="Tecnicos" Type="Self.Tecnicos" Multiplicity="0..1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Tecnicos">
+              <PropertyRef Name="IdTecnico" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdTecnico" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Tickets_Usuarios">
+          <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
+          <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuarios">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Tickets">
+              <PropertyRef Name="IdUsuario" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="HelpDeskTIEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Estados" EntityType="Self.Estados" />
+          <EntitySet Name="Prioridades" EntityType="Self.Prioridades" />
+          <EntitySet Name="Tecnicos" EntityType="Self.Tecnicos" />
+          <EntitySet Name="Tickets" EntityType="Self.Tickets" />
+          <EntitySet Name="Usuarios" EntityType="Self.Usuarios" />
+          <AssociationSet Name="FK_Tickets_Estados" Association="Self.FK_Tickets_Estados">
+            <End Role="Estados" EntitySet="Estados" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Prioridades" Association="Self.FK_Tickets_Prioridades">
+            <End Role="Prioridades" EntitySet="Prioridades" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tecnicos_Usuarios" Association="Self.FK_Tecnicos_Usuarios">
+            <End Role="Usuarios" EntitySet="Usuarios" />
+            <End Role="Tecnicos" EntitySet="Tecnicos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Tecnicos" Association="Self.FK_Tickets_Tecnicos">
+            <End Role="Tecnicos" EntitySet="Tecnicos" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Tickets_Usuarios" Association="Self.FK_Tickets_Usuarios">
+            <End Role="Usuarios" EntitySet="Usuarios" />
+            <End Role="Tickets" EntitySet="Tickets" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="HelpDeskTIModelStoreContainer" CdmEntityContainer="HelpDeskTIEntities">
+          <EntitySetMapping Name="Estados">
+            <EntityTypeMapping TypeName="HelpDeskTIModel.Estados">
+              <MappingFragment StoreEntitySet="Estados">
+                <ScalarProperty Name="IdEstado" ColumnName="IdEstado" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
+                <ScalarProperty Name="Orden" ColumnName="Orden" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Prioridades">
+            <EntityTypeMapping TypeName="HelpDeskTIModel.Prioridades">
+              <MappingFragment StoreEntitySet="Prioridades">
+                <ScalarProperty Name="IdPrioridad" ColumnName="IdPrioridad" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="Nivel" ColumnName="Nivel" />
+                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Tecnicos">
+            <EntityTypeMapping TypeName="HelpDeskTIModel.Tecnicos">
+              <MappingFragment StoreEntitySet="Tecnicos">
+                <ScalarProperty Name="IdTecnico" ColumnName="IdTecnico" />
+                <ScalarProperty Name="IdUsuario" ColumnName="IdUsuario" />
+                <ScalarProperty Name="Activo" ColumnName="Activo" />
+                <ScalarProperty Name="FechaIngreso" ColumnName="FechaIngreso" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Tickets">
+            <EntityTypeMapping TypeName="HelpDeskTIModel.Tickets">
+              <MappingFragment StoreEntitySet="Tickets">
+                <ScalarProperty Name="IdTicket" ColumnName="IdTicket" />
+                <ScalarProperty Name="Titulo" ColumnName="Titulo" />
+                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
+                <ScalarProperty Name="IdUsuario" ColumnName="IdUsuario" />
+                <ScalarProperty Name="IdTecnico" ColumnName="IdTecnico" />
+                <ScalarProperty Name="IdEstado" ColumnName="IdEstado" />
+                <ScalarProperty Name="IdPrioridad" ColumnName="IdPrioridad" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+                <ScalarProperty Name="FechaActualizacion" ColumnName="FechaActualizacion" />
+                <ScalarProperty Name="FechaCierre" ColumnName="FechaCierre" />
+                <ScalarProperty Name="Solucion" ColumnName="Solucion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Usuarios">
+            <EntityTypeMapping TypeName="HelpDeskTIModel.Usuarios">
+              <MappingFragment StoreEntitySet="Usuarios">
+                <ScalarProperty Name="IdUsuario" ColumnName="IdUsuario" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="Correo" ColumnName="Correo" />
+                <ScalarProperty Name="ContrasenaHash" ColumnName="ContrasenaHash" />
+                <ScalarProperty Name="Rol" ColumnName="Rol" />
+                <ScalarProperty Name="Activo" ColumnName="Activo" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

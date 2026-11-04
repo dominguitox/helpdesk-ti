@@ -31,5 +31,45 @@ namespace helpdesk_ti
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.ContentPlaceHolder MainContent;
+
+        /// <summary>
+        /// lnkBrand control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkBrand;
+
+        /// <summary>
+        /// phClienteNav control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.PlaceHolder phClienteNav;
+
+        /// <summary>
+        /// phStaffNav control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.PlaceHolder phStaffNav;
+
+        /// <summary>
+        /// phAdminNav control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.PlaceHolder phAdminNav;
+
+        /// <summary>
+        /// phAnonymousNav control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.PlaceHolder phAnonymousNav;
+
+        /// <summary>
+        /// phSignedInNav control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.PlaceHolder phSignedInNav;
+
+        /// <summary>
+        /// lblNombreUsuario control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNombreUsuario;
+
+        /// <summary>
+        /// btnCerrarSesion control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnCerrarSesion;
     }
 }

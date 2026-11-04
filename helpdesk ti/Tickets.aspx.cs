@@ -10,22 +10,39 @@ namespace helpdesk_ti
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (Session["IdUsuario"] == null)
             {
-                CargarTickets();
+                Response.Redirect("~/Login.aspx");
+                return;
             }
+
+            string rol = Convert.ToString(Session["Rol"]);
+            if (rol == "Usuario")
+            {
+                Response.Redirect("~/NuevoTicket.aspx");
+                return;
+            }
+
+            if (rol != "Tecnico" && rol != "Administrador")
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+
+            if (!IsPostBack)
+                CargarTickets();
         }
 
         private void CargarTickets()
         {
-            using (var db = new HelpDeskContexto())
+            using (var db = new HelpDeskTIEntities())
             {
                 var tickets = from t in db.Tickets
                               join e in db.Estados on t.IdEstado equals e.IdEstado
                               join p in db.Prioridades on t.IdPrioridad equals p.IdPrioridad
-                              orderby t.FechaCreacion descending
                               select new
                               {
+                                  t.IdTecnico,
                                   t.IdTicket,
                                   t.Titulo,
                                   Estado = e.Nombre,
@@ -35,7 +52,19 @@ namespace helpdesk_ti
                                   t.FechaCreacion
                               };
 
-                gvTickets.DataSource = tickets.ToList();
+                if (Convert.ToString(Session["Rol"]) == "Tecnico")
+                {
+                    int idUsuario = Convert.ToInt32(Session["IdUsuario"]);
+                    int idTecnico = db.Tecnicos
+                        .Where(te => te.IdUsuario == idUsuario && te.Activo)
+                        .Select(te => te.IdTecnico)
+                        .FirstOrDefault();
+                    tickets = tickets.Where(t => t.IdTecnico == idTecnico);
+                }
+
+                gvTickets.DataSource = tickets
+                    .OrderByDescending(t => t.FechaCreacion)
+                    .ToList();
                 gvTickets.DataBind();
             }
         }
@@ -52,7 +81,7 @@ namespace helpdesk_ti
 
         private void CargarDetalle(int idTicket)
         {
-            using (var db = new HelpDeskContexto())
+            using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(idTicket);
                 if (ticket == null) return;
@@ -96,7 +125,7 @@ namespace helpdesk_ti
         }
         private void CargarCombos()
         {
-            using (var db = new HelpDeskContexto())
+            using (var db = new HelpDeskTIEntities())
             {
                 ddlEstado.DataSource = db.Estados.OrderBy(x => x.Nombre).ToList();
                 ddlEstado.DataTextField = "Nombre";
@@ -126,7 +155,7 @@ namespace helpdesk_ti
         // para no sobrescribir lo que el usuario elige antes de guardar.
         private void PreseleccionarCombos(int idTicket)
         {
-            using (var db = new HelpDeskContexto())
+            using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(idTicket);
                 ddlEstado.SelectedValue = ticket.IdEstado.ToString();
@@ -140,7 +169,7 @@ namespace helpdesk_ti
         {
             int id = (int)ViewState["IdTicket"];
 
-            using (var db = new HelpDeskContexto())
+            using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(id);
                 ticket.IdEstado = int.Parse(ddlEstado.SelectedValue);
@@ -175,7 +204,7 @@ namespace helpdesk_ti
         {
             int id = (int)ViewState["IdTicket"];
 
-            using (var db = new HelpDeskContexto())
+            using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(id);
                 var estado = db.Estados.First(x => x.Nombre == nombreEstado);
