@@ -1,4 +1,4 @@
-<%@ Page Title="Administrar técnicos" Language="C#" MasterPageFile="~/Site.Master"
+﻿<%@ Page Title="Administrar técnicos" Language="C#" MasterPageFile="~/Site.Master"
     AutoEventWireup="true" CodeBehind="Tecnicos.aspx.cs"
     Inherits="helpdesk_ti.AdminTecnicos" %>
 
