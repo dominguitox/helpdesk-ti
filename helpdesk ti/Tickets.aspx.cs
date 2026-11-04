@@ -1,5 +1,6 @@
 ﻿using helpdesk_ti.Models;
 using System;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
@@ -31,6 +32,7 @@ namespace helpdesk_ti
 
             pnlPrioridadEdicion.Visible = EsAdministrador;
             pnlAsignacion.Visible = EsAdministrador;
+            pnlAdminActions.Visible = EsAdministrador;
 
             if (!IsPostBack)
                 CargarTickets();
@@ -335,6 +337,54 @@ namespace helpdesk_ti
             CambiarEstado("Cerrado", true);
         }
 
+        protected void btnEliminar_Click(object sender, EventArgs e)
+        {
+            if (!EsAdministrador)
+            {
+                MostrarMensajeLista("Solo un administrador puede eliminar tickets.", false);
+                return;
+            }
+
+            int idTicket;
+            if (!int.TryParse(Convert.ToString(ViewState["IdTicket"]), out idTicket))
+            {
+                MostrarMensajeLista("Selecciona primero el ticket que quieres eliminar.", false);
+                return;
+            }
+
+            try
+            {
+                using (var db = new HelpDeskTIEntities())
+                {
+                    var ticket = db.Tickets.Find(idTicket);
+                    if (ticket == null)
+                    {
+                        ViewState.Remove("IdTicket");
+                        pnlDetalle.Visible = false;
+                        gvTickets.SelectedIndex = -1;
+                        CargarTickets();
+                        MostrarMensajeLista("El ticket ya no existe.", false);
+                        return;
+                    }
+
+                    db.Tickets.Remove(ticket);
+                    db.SaveChanges();
+                }
+
+                ViewState.Remove("IdTicket");
+                gvTickets.SelectedIndex = -1;
+                pnlDetalle.Visible = false;
+                CargarTickets();
+                MostrarMensajeLista("Ticket eliminado.", true);
+            }
+            catch (DbUpdateException)
+            {
+                MostrarMensajeLista(
+                    "No se pudo eliminar el ticket porque tiene información relacionada.",
+                    false);
+            }
+        }
+
         private void CambiarEstado(string nombreEstado, bool cerrar)
         {
             int id;
@@ -418,6 +468,15 @@ namespace helpdesk_ti
             lblMensaje.Text = texto;
             lblMensaje.CssClass = exito ? "d-block mb-3 text-success" : "d-block mb-3 text-danger";
             lblMensaje.Visible = true;
+        }
+
+        private void MostrarMensajeLista(string texto, bool exito)
+        {
+            lblMensajeLista.Text = texto;
+            lblMensajeLista.CssClass = exito
+                ? "alert alert-success d-block"
+                : "alert alert-danger d-block";
+            lblMensajeLista.Visible = true;
         }
 
         private static string ClasePrioridad(byte nivel)

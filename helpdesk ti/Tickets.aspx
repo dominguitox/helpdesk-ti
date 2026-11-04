@@ -60,6 +60,8 @@
     </style>
 
     <h2>Tickets</h2>
+    <asp:Label ID="lblMensajeLista" runat="server" Visible="false"
+        CssClass="d-block mb-3" />
     <asp:GridView ID="gvTickets" runat="server"
         AutoGenerateColumns="false"
         DataKeyNames="IdTicket"
@@ -168,6 +170,13 @@
                     <asp:Button ID="btnCerrar" runat="server" Text="Cerrar ticket"
                         CssClass="btn btn-secondary" OnClick="btnCerrar_Click" />
                 </div>
+
+                <asp:Panel ID="pnlAdminActions" runat="server" CssClass="mt-3">
+                    <asp:Button ID="btnEliminar" runat="server" Text="Eliminar ticket"
+                        CssClass="btn btn-outline-danger"
+                        OnClick="btnEliminar_Click"
+                        OnClientClick="return confirm('¿Eliminar definitivamente este ticket?');" />
+                </asp:Panel>
             </div>
         </div>
 

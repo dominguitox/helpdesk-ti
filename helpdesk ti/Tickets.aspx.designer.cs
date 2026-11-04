@@ -15,6 +15,15 @@ namespace helpdesk_ti
     {
 
         /// <summary>
+        /// lblMensajeLista control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblMensajeLista;
+
+        /// <summary>
         /// gvTickets control.
         /// </summary>
         /// <remarks>
@@ -230,5 +239,15 @@ namespace helpdesk_ti
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCerrar;
+
+        /// <summary>
+        /// pnlAdminActions control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlAdminActions;
+
+        /// <summary>
+        /// btnEliminar control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnEliminar;
     }
 }
