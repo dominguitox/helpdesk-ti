@@ -12,16 +12,14 @@ namespace helpdesk_ti
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["IdUsuario"] == null)
+            string rol = Autorizacion.RefrescarRolSesion(Session);
+            if (rol == null)
             {
                 Response.Redirect("~/Login.aspx");
                 return;
             }
 
-            if (!string.Equals(
-                Convert.ToString(Session["Rol"]),
-                "Administrador",
-                StringComparison.Ordinal))
+            if (!string.Equals(rol, "Administrador", StringComparison.Ordinal))
             {
                 Response.Redirect("~/Tickets.aspx");
                 return;
@@ -109,7 +107,6 @@ namespace helpdesk_ti
                                 Nombre = nombre,
                                 Correo = correo,
                                 ContrasenaHash = Login.Hash(contrasena),
-                                Rol = "Tecnico",
                                 Activo = true,
                                 FechaCreacion = DateTime.Now
                             };

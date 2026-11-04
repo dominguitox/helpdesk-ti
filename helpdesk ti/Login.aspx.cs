@@ -13,7 +13,11 @@ namespace helpdesk_ti
             // Si ya inició sesión, no tiene que volver a ver el login
             if (!IsPostBack && Session["IdUsuario"] != null)
             {
-                string ruta = Convert.ToString(Session["Rol"]) == "Usuario"
+                string rol = Autorizacion.RefrescarRolSesion(Session);
+                if (rol == null)
+                    return;
+
+                string ruta = rol == "Usuario"
                     ? "~/NuevoTicket.aspx"
                     : "~/Tickets.aspx";
                 Response.Redirect(ruta);
@@ -24,7 +28,6 @@ namespace helpdesk_ti
         {
             string correo = txtUsuario.Text.Trim();
             string hash = Hash(txtContrasena.Text);
-            string rutaDestino = "~/Tickets.aspx";
 
             using (var db = new HelpDeskTIEntities())
             {
@@ -32,7 +35,7 @@ namespace helpdesk_ti
                     .Where(u => u.Correo == correo
                                 && u.ContrasenaHash == hash
                                 && u.Activo)
-                    .Select(u => new { u.IdUsuario, u.Nombre, u.Rol })
+                    .Select(u => new { u.IdUsuario, u.Nombre })
                     .FirstOrDefault();
 
                 if (encontrado == null)
@@ -42,13 +45,22 @@ namespace helpdesk_ti
                     return;
                 }
 
+                string rol = Autorizacion.ObtenerRol(db, encontrado.IdUsuario);
+                if (rol == null)
+                {
+                    lblError.Text = "El perfil está inactivo o tiene una asignación de rol inválida.";
+                    lblError.Visible = true;
+                    return;
+                }
+
                 Session["IdUsuario"] = encontrado.IdUsuario;
                 Session["NombreUsuario"] = encontrado.Nombre;
-                Session["Rol"] = encontrado.Rol;
-                if (encontrado.Rol == "Usuario")
-                    rutaDestino = "~/NuevoTicket.aspx";
+                Session["Rol"] = rol;
             }
 
+            string rutaDestino = Convert.ToString(Session["Rol"]) == "Usuario"
+                ? "~/NuevoTicket.aspx"
+                : "~/Tickets.aspx";
             Response.Redirect(rutaDestino);
         }
 

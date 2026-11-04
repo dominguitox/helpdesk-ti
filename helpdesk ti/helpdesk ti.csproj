@@ -215,6 +215,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="Autorizacion.cs" />
     <Compile Include="About.aspx.cs">
       <DependentUpon>About.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -241,6 +242,9 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Estados.cs">
+      <DependentUpon>HelpDeskContexto.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Administradores.cs">
       <DependentUpon>HelpDeskContexto.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\HelpDeskContexto.Context.cs">

@@ -11,13 +11,13 @@ namespace helpdesk_ti
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["IdUsuario"] == null)
+            string rol = Autorizacion.RefrescarRolSesion(Session);
+            if (rol == null)
             {
                 Response.Redirect("~/Login.aspx");
                 return;
             }
 
-            string rol = Convert.ToString(Session["Rol"]);
             if (rol == "Usuario")
             {
                 Response.Redirect("~/NuevoTicket.aspx");
@@ -184,7 +184,7 @@ namespace helpdesk_ti
 
                 var tecnicos = (from te in db.Tecnicos
                                 join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
-                                where te.Activo && u.Activo && u.Rol == "Tecnico"
+                                where te.Activo && u.Activo
                                 orderby u.Nombre
                                 select new { te.IdTecnico, u.Nombre }).ToList();
 
@@ -296,7 +296,7 @@ namespace helpdesk_ti
                         bool tecnicoActivo = (from te in db.Tecnicos
                                               join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
                                               where te.IdTecnico == idTecnico && te.Activo &&
-                                                  u.Activo && u.Rol == "Tecnico"
+                                                  u.Activo
                                               select te.IdTecnico).Any();
 
                         // Si el ticket ya estaba asignado a un técnico desactivado, se permite
@@ -438,7 +438,7 @@ namespace helpdesk_ti
             int idUsuario = Convert.ToInt32(Session["IdUsuario"]);
             return (from te in db.Tecnicos
                     join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
-                    where te.IdUsuario == idUsuario && te.Activo && u.Activo && u.Rol == "Tecnico"
+                    where te.IdUsuario == idUsuario && te.Activo && u.Activo
                     select te.IdTecnico).FirstOrDefault();
         }
 

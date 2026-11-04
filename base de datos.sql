@@ -48,16 +48,13 @@ CREATE TABLE dbo.Usuarios
     Nombre NVARCHAR(100) NOT NULL,
     Correo NVARCHAR(150) NOT NULL,
     ContrasenaHash CHAR(64) NOT NULL,
-    Rol NVARCHAR(20) NOT NULL,
     Activo BIT NOT NULL
         CONSTRAINT DF_Usuarios_Activo DEFAULT (1),
     FechaCreacion DATETIME2(0) NOT NULL
         CONSTRAINT DF_Usuarios_FechaCreacion DEFAULT (SYSDATETIME()),
 
     CONSTRAINT PK_Usuarios PRIMARY KEY (IdUsuario),
-    CONSTRAINT UQ_Usuarios_Correo UNIQUE (Correo),
-    CONSTRAINT CK_Usuarios_Rol
-        CHECK (Rol IN (N'Administrador', N'Usuario', N'Tecnico'))
+    CONSTRAINT UQ_Usuarios_Correo UNIQUE (Correo)
 );
 GO
 
@@ -99,6 +96,22 @@ CREATE TABLE dbo.Tecnicos
     CONSTRAINT PK_Tecnicos PRIMARY KEY (IdTecnico),
     CONSTRAINT UQ_Tecnicos_IdUsuario UNIQUE (IdUsuario),
     CONSTRAINT FK_Tecnicos_Usuarios
+        FOREIGN KEY (IdUsuario) REFERENCES dbo.Usuarios (IdUsuario)
+);
+GO
+
+CREATE TABLE dbo.Administradores
+(
+    IdAdministrador INT IDENTITY(1,1) NOT NULL,
+    IdUsuario INT NOT NULL,
+    Activo BIT NOT NULL
+        CONSTRAINT DF_Administradores_Activo DEFAULT (1),
+    FechaIngreso DATETIME2(0) NOT NULL
+        CONSTRAINT DF_Administradores_FechaIngreso DEFAULT (SYSDATETIME()),
+
+    CONSTRAINT PK_Administradores PRIMARY KEY (IdAdministrador),
+    CONSTRAINT UQ_Administradores_IdUsuario UNIQUE (IdUsuario),
+    CONSTRAINT FK_Administradores_Usuarios
         FOREIGN KEY (IdUsuario) REFERENCES dbo.Usuarios (IdUsuario)
 );
 GO

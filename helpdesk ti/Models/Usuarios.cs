@@ -17,6 +17,7 @@ namespace helpdesk_ti.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Usuarios()
         {
+            this.Administradores = new HashSet<Administradores>();
             this.Tecnicos = new HashSet<Tecnicos>();
             this.Tickets = new HashSet<Tickets>();
         }
@@ -25,10 +26,11 @@ namespace helpdesk_ti.Models
         public string Nombre { get; set; }
         public string Correo { get; set; }
         public string ContrasenaHash { get; set; }
-        public string Rol { get; set; }
         public bool Activo { get; set; }
         public System.DateTime FechaCreacion { get; set; }
     
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Administradores> Administradores { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Tecnicos> Tecnicos { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

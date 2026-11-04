@@ -32,6 +32,15 @@
           <Property Name="Activo" Type="bit" Nullable="false" />
           <Property Name="FechaIngreso" Type="datetime2" Precision="0" Nullable="false" />
         </EntityType>
+        <EntityType Name="Administradores">
+          <Key>
+            <PropertyRef Name="IdAdministrador" />
+          </Key>
+          <Property Name="IdAdministrador" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="IdUsuario" Type="int" Nullable="false" />
+          <Property Name="Activo" Type="bit" Nullable="false" />
+          <Property Name="FechaIngreso" Type="datetime2" Precision="0" Nullable="false" />
+        </EntityType>
         <EntityType Name="Tickets">
           <Key>
             <PropertyRef Name="IdTicket" />
@@ -56,10 +65,21 @@
           <Property Name="Nombre" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="Correo" Type="nvarchar" MaxLength="150" Nullable="false" />
           <Property Name="ContrasenaHash" Type="char" MaxLength="64" Nullable="false" />
-          <Property Name="Rol" Type="nvarchar" MaxLength="20" Nullable="false" />
           <Property Name="Activo" Type="bit" Nullable="false" />
           <Property Name="FechaCreacion" Type="datetime2" Precision="0" Nullable="false" />
         </EntityType>
+        <Association Name="FK_Administradores_Usuarios">
+          <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
+          <End Role="Administradores" Type="Self.Administradores" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuarios">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Administradores">
+              <PropertyRef Name="IdUsuario" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Tecnicos_Usuarios">
           <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
           <End Role="Tecnicos" Type="Self.Tecnicos" Multiplicity="*" />
@@ -124,11 +144,16 @@
           <EntitySet Name="Estados" EntityType="Self.Estados" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Prioridades" EntityType="Self.Prioridades" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Tecnicos" EntityType="Self.Tecnicos" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Administradores" EntityType="Self.Administradores" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Tickets" EntityType="Self.Tickets" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Usuarios" EntityType="Self.Usuarios" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_Tecnicos_Usuarios" Association="Self.FK_Tecnicos_Usuarios">
             <End Role="Usuarios" EntitySet="Usuarios" />
             <End Role="Tecnicos" EntitySet="Tecnicos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Administradores_Usuarios" Association="Self.FK_Administradores_Usuarios">
+            <End Role="Usuarios" EntitySet="Usuarios" />
+            <End Role="Administradores" EntitySet="Administradores" />
           </AssociationSet>
           <AssociationSet Name="FK_Tickets_Estados" Association="Self.FK_Tickets_Estados">
             <End Role="Estados" EntitySet="Estados" />
@@ -183,6 +208,16 @@
           <NavigationProperty Name="Usuarios" Relationship="Self.FK_Tecnicos_Usuarios" FromRole="Tecnicos" ToRole="Usuarios" />
           <NavigationProperty Name="Tickets" Relationship="Self.FK_Tickets_Tecnicos" FromRole="Tecnicos" ToRole="Tickets" />
         </EntityType>
+        <EntityType Name="Administradores">
+          <Key>
+            <PropertyRef Name="IdAdministrador" />
+          </Key>
+          <Property Name="IdAdministrador" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="IdUsuario" Type="Int32" Nullable="false" />
+          <Property Name="Activo" Type="Boolean" Nullable="false" />
+          <Property Name="FechaIngreso" Type="DateTime" Nullable="false" Precision="0" />
+          <NavigationProperty Name="Usuarios" Relationship="Self.FK_Administradores_Usuarios" FromRole="Administradores" ToRole="Usuarios" />
+        </EntityType>
         <EntityType Name="Tickets">
           <Key>
             <PropertyRef Name="IdTicket" />
@@ -211,9 +246,9 @@
           <Property Name="Nombre" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Correo" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="ContrasenaHash" Type="String" MaxLength="64" FixedLength="true" Unicode="false" Nullable="false" />
-          <Property Name="Rol" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Activo" Type="Boolean" Nullable="false" />
           <Property Name="FechaCreacion" Type="DateTime" Nullable="false" Precision="0" />
+          <NavigationProperty Name="Administradores" Relationship="Self.FK_Administradores_Usuarios" FromRole="Usuarios" ToRole="Administradores" />
           <NavigationProperty Name="Tecnicos" Relationship="Self.FK_Tecnicos_Usuarios" FromRole="Usuarios" ToRole="Tecnicos" />
           <NavigationProperty Name="Tickets" Relationship="Self.FK_Tickets_Usuarios" FromRole="Usuarios" ToRole="Tickets" />
         </EntityType>
@@ -253,6 +288,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Administradores_Usuarios">
+          <End Role="Usuarios" Type="Self.Usuarios" Multiplicity="1" />
+          <End Role="Administradores" Type="Self.Administradores" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuarios">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Administradores">
+              <PropertyRef Name="IdUsuario" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Tickets_Tecnicos">
           <End Role="Tecnicos" Type="Self.Tecnicos" Multiplicity="0..1" />
           <End Role="Tickets" Type="Self.Tickets" Multiplicity="*" />
@@ -281,6 +328,7 @@
           <EntitySet Name="Estados" EntityType="Self.Estados" />
           <EntitySet Name="Prioridades" EntityType="Self.Prioridades" />
           <EntitySet Name="Tecnicos" EntityType="Self.Tecnicos" />
+          <EntitySet Name="Administradores" EntityType="Self.Administradores" />
           <EntitySet Name="Tickets" EntityType="Self.Tickets" />
           <EntitySet Name="Usuarios" EntityType="Self.Usuarios" />
           <AssociationSet Name="FK_Tickets_Estados" Association="Self.FK_Tickets_Estados">
@@ -294,6 +342,10 @@
           <AssociationSet Name="FK_Tecnicos_Usuarios" Association="Self.FK_Tecnicos_Usuarios">
             <End Role="Usuarios" EntitySet="Usuarios" />
             <End Role="Tecnicos" EntitySet="Tecnicos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Administradores_Usuarios" Association="Self.FK_Administradores_Usuarios">
+            <End Role="Usuarios" EntitySet="Usuarios" />
+            <End Role="Administradores" EntitySet="Administradores" />
           </AssociationSet>
           <AssociationSet Name="FK_Tickets_Tecnicos" Association="Self.FK_Tickets_Tecnicos">
             <End Role="Tecnicos" EntitySet="Tecnicos" />
@@ -340,6 +392,16 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="Administradores">
+            <EntityTypeMapping TypeName="HelpDeskTIModel.Administradores">
+              <MappingFragment StoreEntitySet="Administradores">
+                <ScalarProperty Name="IdAdministrador" ColumnName="IdAdministrador" />
+                <ScalarProperty Name="IdUsuario" ColumnName="IdUsuario" />
+                <ScalarProperty Name="Activo" ColumnName="Activo" />
+                <ScalarProperty Name="FechaIngreso" ColumnName="FechaIngreso" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="Tickets">
             <EntityTypeMapping TypeName="HelpDeskTIModel.Tickets">
               <MappingFragment StoreEntitySet="Tickets">
@@ -364,7 +426,6 @@
                 <ScalarProperty Name="Nombre" ColumnName="Nombre" />
                 <ScalarProperty Name="Correo" ColumnName="Correo" />
                 <ScalarProperty Name="ContrasenaHash" ColumnName="ContrasenaHash" />
-                <ScalarProperty Name="Rol" ColumnName="Rol" />
                 <ScalarProperty Name="Activo" ColumnName="Activo" />
                 <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
               </MappingFragment>

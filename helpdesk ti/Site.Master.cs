@@ -12,7 +12,10 @@ namespace helpdesk_ti
         protected void Page_Load(object sender, EventArgs e)
         {
             bool autenticado = Session["IdUsuario"] != null;
-            string rol = Convert.ToString(Session["Rol"]);
+            string rol = autenticado
+                ? Autorizacion.RefrescarRolSesion(Session)
+                : null;
+            autenticado = rol != null;
 
             string rutaInicio = "~/Login.aspx";
             if (autenticado && rol == "Usuario")

@@ -11,16 +11,14 @@ namespace helpdesk_ti
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["IdUsuario"] == null)
+            string rol = Autorizacion.RefrescarRolSesion(Session);
+            if (rol == null)
             {
                 Response.Redirect("~/Login.aspx");
                 return;
             }
 
-            if (!string.Equals(
-                Convert.ToString(Session["Rol"]),
-                "Usuario",
-                StringComparison.Ordinal))
+            if (!string.Equals(rol, "Usuario", StringComparison.Ordinal))
             {
                 Response.Redirect("~/Tickets.aspx");
                 return;
@@ -68,8 +66,10 @@ namespace helpdesk_ti
                 var prioridad = db.Prioridades.Find(idPrioridad);
                 var estado = db.Estados
                     .FirstOrDefault(estadoRow => estadoRow.Nombre == "Nuevo");
+                bool esPersonal = db.Tecnicos.Any(tecnico => tecnico.IdUsuario == idUsuario) ||
+                    db.Administradores.Any(administrador => administrador.IdUsuario == idUsuario);
 
-                if (usuario == null || !usuario.Activo ||
+                if (usuario == null || !usuario.Activo || esPersonal ||
                     prioridad == null || estado == null)
                 {
                     MostrarMensaje(

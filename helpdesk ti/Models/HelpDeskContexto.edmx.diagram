@@ -8,11 +8,13 @@
         <EntityTypeShape EntityType="HelpDeskTIModel.Estados" Width="1.5" PointX="3.25" PointY="4.625" IsExpanded="true" />
         <EntityTypeShape EntityType="HelpDeskTIModel.Prioridades" Width="1.5" PointX="7.5" PointY="4.5" IsExpanded="true" />
         <EntityTypeShape EntityType="HelpDeskTIModel.Tecnicos" Width="1.5" PointX="3" PointY="1.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="HelpDeskTIModel.Administradores" Width="1.8" PointX="0.75" PointY="4.5" IsExpanded="true" />
         <EntityTypeShape EntityType="HelpDeskTIModel.Tickets" Width="1.5" PointX="5.25" PointY="1" IsExpanded="true" />
         <EntityTypeShape EntityType="HelpDeskTIModel.Usuarios" Width="1.5" PointX="0.75" PointY="1.625" IsExpanded="true" />
         <AssociationConnector Association="HelpDeskTIModel.FK_Tickets_Estados" ManuallyRouted="false" />
         <AssociationConnector Association="HelpDeskTIModel.FK_Tickets_Prioridades" ManuallyRouted="false" />
         <AssociationConnector Association="HelpDeskTIModel.FK_Tecnicos_Usuarios" ManuallyRouted="false" />
+        <AssociationConnector Association="HelpDeskTIModel.FK_Administradores_Usuarios" ManuallyRouted="false" />
         <AssociationConnector Association="HelpDeskTIModel.FK_Tickets_Tecnicos" ManuallyRouted="false" />
         <AssociationConnector Association="HelpDeskTIModel.FK_Tickets_Usuarios" ManuallyRouted="false" />
       </Diagram>

@@ -27,6 +27,7 @@ namespace helpdesk_ti.Models
     
         public virtual DbSet<Estados> Estados { get; set; }
         public virtual DbSet<Prioridades> Prioridades { get; set; }
+        public virtual DbSet<Administradores> Administradores { get; set; }
         public virtual DbSet<Tecnicos> Tecnicos { get; set; }
         public virtual DbSet<Tickets> Tickets { get; set; }
         public virtual DbSet<Usuarios> Usuarios { get; set; }
