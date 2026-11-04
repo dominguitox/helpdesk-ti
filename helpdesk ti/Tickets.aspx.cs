@@ -29,8 +29,22 @@ namespace helpdesk_ti
                 return;
             }
 
+            pnlPrioridadEdicion.Visible = EsAdministrador;
+            pnlAsignacion.Visible = EsAdministrador;
+
             if (!IsPostBack)
                 CargarTickets();
+        }
+
+        private bool EsAdministrador
+        {
+            get
+            {
+                return string.Equals(
+                    Convert.ToString(Session["Rol"]),
+                    "Administrador",
+                    StringComparison.Ordinal);
+            }
         }
 
         private void CargarTickets()
@@ -48,17 +62,13 @@ namespace helpdesk_ti
                                   Estado = e.Nombre,
                                   Prioridad = p.Nombre,
                                   PrioridadNivel = p.Nivel,
-                                  Resuelto = e.Nombre == "Resuelto",
+                                  Resuelto = e.Nombre == "Resuelto" || e.Nombre == "Cerrado",
                                   t.FechaCreacion
                               };
 
                 if (Convert.ToString(Session["Rol"]) == "Tecnico")
                 {
-                    int idUsuario = Convert.ToInt32(Session["IdUsuario"]);
-                    int idTecnico = db.Tecnicos
-                        .Where(te => te.IdUsuario == idUsuario && te.Activo)
-                        .Select(te => te.IdTecnico)
-                        .FirstOrDefault();
+                    int idTecnico = ObtenerIdTecnicoActual(db);
                     tickets = tickets.Where(t => t.IdTecnico == idTecnico);
                 }
 
@@ -72,10 +82,31 @@ namespace helpdesk_ti
 
         protected void gvTickets_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int id = (int)gvTickets.SelectedDataKey.Value;
+            int id;
+            if (gvTickets.SelectedDataKey == null ||
+                !int.TryParse(Convert.ToString(gvTickets.SelectedDataKey.Value), out id))
+            {
+                ViewState.Remove("IdTicket");
+                pnlDetalle.Visible = false;
+                MostrarMensaje("Selecciona un ticket válido.", false);
+                return;
+            }
+
+            using (var db = new HelpDeskTIEntities())
+            {
+                var ticket = db.Tickets.Find(id);
+                if (!PuedeGestionarTicket(db, ticket))
+                {
+                    ViewState.Remove("IdTicket");
+                    pnlDetalle.Visible = false;
+                    MostrarMensaje("No tienes permiso para ver este ticket.", false);
+                    return;
+                }
+            }
+
             ViewState["IdTicket"] = id;
-            CargarCombos();          // llena las listas desde la BD
-            PreseleccionarCombos(id); // muestra los valores actuales del ticket
+            CargarCombos(id);
+            PreseleccionarCombos(id);
             CargarDetalle(id);
         }
 
@@ -84,7 +115,12 @@ namespace helpdesk_ti
             using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(idTicket);
-                if (ticket == null) return;
+                if (!PuedeGestionarTicket(db, ticket))
+                {
+                    ViewState.Remove("IdTicket");
+                    pnlDetalle.Visible = false;
+                    return;
+                }
 
                 var estado = db.Estados.Find(ticket.IdEstado);
                 var prioridad = db.Prioridades.Find(ticket.IdPrioridad);
@@ -105,15 +141,16 @@ namespace helpdesk_ti
                 }
 
                 // Banner de prioridad: color según el nivel, texto desde la base de datos
-                pnlPrioridad.CssClass = "prioridad-banner " + ClasePrioridad(prioridad.Nivel);
-                lblPrioridadNombre.Text = Texto(prioridad.Nombre);
-                lblPrioridadDescripcion.Text = Texto(prioridad.Descripcion);
+                pnlPrioridad.CssClass = "prioridad-banner " +
+                    ClasePrioridad(prioridad == null ? (byte)0 : prioridad.Nivel);
+                lblPrioridadNombre.Text = Texto(prioridad == null ? null : prioridad.Nombre);
+                lblPrioridadDescripcion.Text = Texto(prioridad == null ? null : prioridad.Descripcion);
 
                 lblNumero.Text = ticket.IdTicket.ToString();
                 lblTitulo.Text = Texto(ticket.Titulo);
                 lblSolicitante.Text = Texto(solicitante != null ? solicitante.Nombre : null);
                 lblTecnico.Text = Texto(tecnico);
-                lblEstado.Text = Texto(estado.Nombre);
+                lblEstado.Text = Texto(estado == null ? null : estado.Nombre);
                 lblFechaCreacion.Text = FormatearFecha(ticket.FechaCreacion);
                 lblFechaActualizacion.Text = FormatearFecha(ticket.FechaActualizacion);
                 lblFechaCierre.Text = FormatearFecha(ticket.FechaCierre);
@@ -123,7 +160,7 @@ namespace helpdesk_ti
                 pnlDetalle.Visible = true;
             }
         }
-        private void CargarCombos()
+        private void CargarCombos(int idTicket)
         {
             using (var db = new HelpDeskTIEntities())
             {
@@ -131,6 +168,9 @@ namespace helpdesk_ti
                 ddlEstado.DataTextField = "Nombre";
                 ddlEstado.DataValueField = "IdEstado";
                 ddlEstado.DataBind();
+
+                if (!EsAdministrador)
+                    return;
 
                 ddlPrioridad.DataSource = db.Prioridades.OrderBy(x => x.Nivel).ToList();
                 ddlPrioridad.DataTextField = "Nombre";
@@ -142,11 +182,29 @@ namespace helpdesk_ti
 
                 var tecnicos = (from te in db.Tecnicos
                                 join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
+                                where te.Activo && u.Activo && u.Rol == "Tecnico"
+                                orderby u.Nombre
                                 select new { te.IdTecnico, u.Nombre }).ToList();
 
                 foreach (var t in tecnicos)
                 {
                     ddlTecnico.Items.Add(new ListItem(t.Nombre, t.IdTecnico.ToString()));
+                }
+
+                var ticket = db.Tickets.Find(idTicket);
+                if (ticket != null && ticket.IdTecnico.HasValue &&
+                    !tecnicos.Any(t => t.IdTecnico == ticket.IdTecnico.Value))
+                {
+                    var tecnicoActual = (from te in db.Tecnicos
+                                         join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
+                                         where te.IdTecnico == ticket.IdTecnico.Value
+                                         select new { te.IdTecnico, u.Nombre }).FirstOrDefault();
+                    if (tecnicoActual != null)
+                    {
+                        ddlTecnico.Items.Add(new ListItem(
+                            tecnicoActual.Nombre + " (inactivo)",
+                            tecnicoActual.IdTecnico.ToString()));
+                    }
                 }
             }
         }
@@ -158,27 +216,104 @@ namespace helpdesk_ti
             using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(idTicket);
+                if (!PuedeGestionarTicket(db, ticket))
+                {
+                    ViewState.Remove("IdTicket");
+                    pnlDetalle.Visible = false;
+                    return;
+                }
+
                 ddlEstado.SelectedValue = ticket.IdEstado.ToString();
-                ddlPrioridad.SelectedValue = ticket.IdPrioridad.ToString();
-                ddlTecnico.SelectedValue = ticket.IdTecnico.HasValue ? ticket.IdTecnico.Value.ToString() : "";
+                if (EsAdministrador)
+                {
+                    ddlPrioridad.SelectedValue = ticket.IdPrioridad.ToString();
+                    ddlTecnico.SelectedValue = ticket.IdTecnico.HasValue
+                        ? ticket.IdTecnico.Value.ToString()
+                        : "";
+                }
                 txtSolucion.Text = ticket.Solucion ?? "";
             }
         }
 
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
-            int id = (int)ViewState["IdTicket"];
+            int id;
+            int idEstado;
+            if (!int.TryParse(Convert.ToString(ViewState["IdTicket"]), out id) ||
+                !int.TryParse(ddlEstado.SelectedValue, out idEstado))
+            {
+                MostrarMensaje("Selecciona un ticket y un estado válidos.", false);
+                return;
+            }
 
             using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(id);
-                ticket.IdEstado = int.Parse(ddlEstado.SelectedValue);
-                ticket.IdPrioridad = int.Parse(ddlPrioridad.SelectedValue);
-                ticket.IdTecnico = string.IsNullOrEmpty(ddlTecnico.SelectedValue)
-                    ? (int?)null
-                    : int.Parse(ddlTecnico.SelectedValue);
+                if (!PuedeGestionarTicket(db, ticket))
+                {
+                    ViewState.Remove("IdTicket");
+                    pnlDetalle.Visible = false;
+                    MostrarMensaje("No tienes permiso para modificar este ticket.", false);
+                    return;
+                }
+
+                var estado = db.Estados.Find(idEstado);
+                if (estado == null)
+                {
+                    MostrarMensaje("El estado seleccionado no existe.", false);
+                    return;
+                }
+
+                ticket.IdEstado = estado.IdEstado;
+
+                if (EsAdministrador)
+                {
+                    int idPrioridad;
+                    if (!int.TryParse(ddlPrioridad.SelectedValue, out idPrioridad) ||
+                        !db.Prioridades.Any(p => p.IdPrioridad == idPrioridad))
+                    {
+                        MostrarMensaje("La prioridad seleccionada no es válida.", false);
+                        return;
+                    }
+
+                    ticket.IdPrioridad = idPrioridad;
+
+                    if (string.IsNullOrWhiteSpace(ddlTecnico.SelectedValue))
+                    {
+                        ticket.IdTecnico = null;
+                    }
+                    else
+                    {
+                        int idTecnico;
+                        if (!int.TryParse(ddlTecnico.SelectedValue, out idTecnico))
+                        {
+                            MostrarMensaje("El técnico seleccionado no es válido.", false);
+                            return;
+                        }
+
+                        bool tecnicoActivo = (from te in db.Tecnicos
+                                              join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
+                                              where te.IdTecnico == idTecnico && te.Activo &&
+                                                  u.Activo && u.Rol == "Tecnico"
+                                              select te.IdTecnico).Any();
+
+                        // Si el ticket ya estaba asignado a un técnico desactivado, se permite
+                        // conservar esa asignación mientras se modifican otros datos.
+                        if (!tecnicoActivo && ticket.IdTecnico != idTecnico)
+                        {
+                            MostrarMensaje("Solo puedes asignar tickets a técnicos activos.", false);
+                            return;
+                        }
+
+                        ticket.IdTecnico = idTecnico;
+                    }
+                }
+
                 ticket.Solucion = string.IsNullOrWhiteSpace(txtSolucion.Text) ? null : txtSolucion.Text.Trim();
                 ticket.FechaActualizacion = DateTime.Now;
+                ticket.FechaCierre = estado.Nombre == "Cerrado"
+                    ? (ticket.FechaCierre ?? DateTime.Now)
+                    : (DateTime?)null;
                 db.SaveChanges();
             }
 
@@ -202,17 +337,37 @@ namespace helpdesk_ti
 
         private void CambiarEstado(string nombreEstado, bool cerrar)
         {
-            int id = (int)ViewState["IdTicket"];
+            int id;
+            if (!int.TryParse(Convert.ToString(ViewState["IdTicket"]), out id))
+            {
+                MostrarMensaje("Selecciona primero un ticket.", false);
+                return;
+            }
 
             using (var db = new HelpDeskTIEntities())
             {
                 var ticket = db.Tickets.Find(id);
-                var estado = db.Estados.First(x => x.Nombre == nombreEstado);
+                if (!PuedeGestionarTicket(db, ticket))
+                {
+                    ViewState.Remove("IdTicket");
+                    pnlDetalle.Visible = false;
+                    MostrarMensaje("No tienes permiso para modificar este ticket.", false);
+                    return;
+                }
+
+                var estado = db.Estados.FirstOrDefault(x => x.Nombre == nombreEstado);
+                if (estado == null)
+                {
+                    MostrarMensaje("El estado solicitado no existe en la base de datos.", false);
+                    return;
+                }
 
                 ticket.IdEstado = estado.IdEstado;
                 ticket.Solucion = string.IsNullOrWhiteSpace(txtSolucion.Text) ? null : txtSolucion.Text.Trim();
                 ticket.FechaActualizacion = DateTime.Now;
-                if (cerrar) ticket.FechaCierre = DateTime.Now;
+                ticket.FechaCierre = cerrar
+                    ? (ticket.FechaCierre ?? DateTime.Now)
+                    : (DateTime?)null;
 
                 db.SaveChanges();
             }
@@ -222,9 +377,40 @@ namespace helpdesk_ti
 
         private void FinalizarCambio(string mensaje)
         {
-            CargarTickets();                          // refresca la lista
-            CargarDetalle((int)ViewState["IdTicket"]); // refresca el detalle
+            int id = Convert.ToInt32(ViewState["IdTicket"]);
+            CargarTickets();
+            CargarDetalle(id);
             MostrarMensaje(mensaje, true);
+        }
+
+        private int ObtenerIdTecnicoActual(HelpDeskTIEntities db)
+        {
+            int idUsuario = Convert.ToInt32(Session["IdUsuario"]);
+            return (from te in db.Tecnicos
+                    join u in db.Usuarios on te.IdUsuario equals u.IdUsuario
+                    where te.IdUsuario == idUsuario && te.Activo && u.Activo && u.Rol == "Tecnico"
+                    select te.IdTecnico).FirstOrDefault();
+        }
+
+        private bool PuedeGestionarTicket(
+            HelpDeskTIEntities db,
+            helpdesk_ti.Models.Tickets ticket)
+        {
+            if (ticket == null)
+                return false;
+
+            if (EsAdministrador)
+                return true;
+
+            if (!string.Equals(
+                Convert.ToString(Session["Rol"]),
+                "Tecnico",
+                StringComparison.Ordinal))
+                return false;
+
+            int idTecnico = ObtenerIdTecnicoActual(db);
+            return idTecnico > 0 && ticket.IdTecnico.HasValue &&
+                ticket.IdTecnico.Value == idTecnico;
         }
 
         private void MostrarMensaje(string texto, bool exito)
@@ -270,7 +456,5 @@ namespace helpdesk_ti
         {
             return fecha.HasValue ? fecha.Value.ToString("dd-MM-yyyy HH:mm") : "—";
         }
-        // NIGGER!  
-
     }
 }

@@ -145,15 +145,15 @@
                     <asp:DropDownList ID="ddlEstado" runat="server" CssClass="form-select" />
                 </div>
 
-                <div class="mb-3">
+                <asp:Panel ID="pnlPrioridadEdicion" runat="server" CssClass="mb-3">
                     <label class="form-label" for="<%= ddlPrioridad.ClientID %>">Prioridad</label>
                     <asp:DropDownList ID="ddlPrioridad" runat="server" CssClass="form-select" />
-                </div>
+                </asp:Panel>
 
-                <div class="mb-3">
+                <asp:Panel ID="pnlAsignacion" runat="server" CssClass="mb-3">
                     <label class="form-label" for="<%= ddlTecnico.ClientID %>">Asignar a técnico</label>
                     <asp:DropDownList ID="ddlTecnico" runat="server" CssClass="form-select" />
-                </div>
+                </asp:Panel>
 
                 <div class="mb-3">
                     <label class="form-label" for="<%= txtSolucion.ClientID %>">Solución</label>

@@ -168,6 +168,11 @@ namespace helpdesk_ti
         protected global::System.Web.UI.WebControls.DropDownList ddlEstado;
 
         /// <summary>
+        /// pnlPrioridadEdicion control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlPrioridadEdicion;
+
+        /// <summary>
         /// ddlPrioridad control.
         /// </summary>
         /// <remarks>
@@ -175,6 +180,11 @@ namespace helpdesk_ti
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlPrioridad;
+
+        /// <summary>
+        /// pnlAsignacion control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlAsignacion;
 
         /// <summary>
         /// ddlTecnico control.
